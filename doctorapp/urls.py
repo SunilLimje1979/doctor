@@ -1,0 +1,34 @@
+from django.urls import path
+from .views import (fi_insert_doctor_medicines,fi_get_all_doctor_medicines,fi_update_doctor_medicines,fi_delete_doctor_medicines)
+from .views import fi_insert_doctor_location, fi_update_doctor_location, fi_delete_doctor_location, fi_get_all_doctor_location
+from .views import fi_insert_doctor, fi_delete_doctor
+from .views import (insert_doctor_location_availability,update_doctor_location_availability,delete_doctor_location_availability,get_all_doctor_location_availability,)
+
+
+urlpatterns = [    
+               
+    ######################### Doctor Medicines ############################
+    path('insert_doctor_medicine/', fi_insert_doctor_medicines, name='insert_doctor_medicines'),
+    path('update_doctor_medicine/<int:doctor_medicine_id>/', fi_update_doctor_medicines, name='update_doctor_medicine'),
+    path('delete_doctor_medicine/<int:doctor_medicine_id>/', fi_delete_doctor_medicines, name='delete_doctor_medicine'),
+    path('get_all_doctor_medicines/', fi_get_all_doctor_medicines, name='get_all_doctor_medicines'),
+     
+    ######################### Doctor Location ############################
+    path('insert_doctor_location/', fi_insert_doctor_location),
+    path('update_doctor_location/', fi_update_doctor_location),
+    path('delete_doctor_location/<int:doctor_location_id>/', fi_delete_doctor_location),
+    path('get_all_doctor_location/', fi_get_all_doctor_location),
+    
+    ######################### Doctor  ############################    
+    path('insert_doctor/', fi_insert_doctor, name='fi_insert_doctor'),
+    path('delete_doctor/<int:doctor_id>/', fi_delete_doctor, name='fi_delete_doctor'),
+    
+    ############################# Doctor location Availability #################################
+    path('insert_doctor_location_availability/', insert_doctor_location_availability, name='insert_doctor_location_availability'),
+    path('update_doctor_location_availability/', update_doctor_location_availability, name='update_doctor_location_availability'),
+    path('delete_doctor_location_availability/<int:doctor_location_availability_id>/', delete_doctor_location_availability, name='delete_doctor_location_availability'),
+    path('get_all_doctor_location_availability/', get_all_doctor_location_availability, name='get_all_doctor_location_availability'),
+    
+    
+]
+
