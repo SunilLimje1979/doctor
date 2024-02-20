@@ -241,7 +241,7 @@ def fi_insert_doctor_location(request):
             'message_debug': [{"Debug": debug}] if debug != "" else []
         }
 
-    return Response(res, status=status.HTTP_400_BAD_REQUEST)
+    return Response(res, status=status.HTTP_200_OK)
 
 ##################### update  ##########
 @api_view(['POST'])
