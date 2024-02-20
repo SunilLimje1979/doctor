@@ -405,7 +405,7 @@ def fi_insert_doctor(request):
             'message_debug': debug if debug else []
         }
 
-    return Response(res, status=status.HTTP_201_CREATED if res['message_code'] == 1000 else status.HTTP_400_BAD_REQUEST)
+    return Response(res, status=status.HTTP_200_OK if res['message_code'] == 1000 else status.HTTP_400_BAD_REQUEST)
 
 ######################## Delete ############################
 @api_view(['DELETE'])
