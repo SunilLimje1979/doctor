@@ -625,3 +625,124 @@ def get_all_doctor_location_availability(request):
 
     return Response(res, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(["POST"])
+def get_doctor_by_id(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    doctor_id = request.data.get('doctor_id', None)
+
+    if not doctor_id:
+        response_data = {'message_code': 999, 'message_text': 'Doctor ID is required.'}
+    else:
+        try:
+            doctor = Tbldoctors.objects.get(doctor_id=doctor_id)
+            serializer = DoctorSerializer(doctor)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Doctor details are fetched successfully',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except Tbldoctors.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Doctor not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def update_doctor_details(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    doctor_id = request.data.get('doctor_id', None)
+    updated_data = request.data.get('updated_data', {})
+
+    if not doctor_id:
+        response_data = {'message_code': 999, 'message_text': 'Doctor ID is required.'}
+    elif not updated_data:
+        response_data = {'message_code': 999, 'message_text': 'Updated data is required.'}
+    else:
+        try:
+            doctor = Tbldoctors.objects.get(doctor_id=doctor_id)
+            # Convert the date string to epoch timestamp
+            date_of_birth_str = updated_data.get('doctor_dateofbirth', '')
+            if date_of_birth_str:
+                date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d')
+                epoch_time = int(date_of_birth.timestamp())
+                updated_data['doctor_dateofbirth'] = epoch_time
+
+            serializer = DoctorSerializer(doctor, data=updated_data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                result = serializer.data
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Doctor details updated successfully',
+                    'message_data': result,
+                    'message_debug': debug
+                }
+            else:
+                response_data = {'message_code': 999, 'message_text': 'Invalid data provided.', 'message_debug': serializer.errors}
+
+        except Tbldoctors.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Doctor not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def insert_ConsultMedic_Fees(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    data = request.data
+    doctor_id = data.get('doctor_id')
+    location_id = data.get('location_id')
+
+    consultation_fee_data = data.get('consultation_fee', {})
+    consultation_fee_data['doctor_id'] = doctor_id
+    consultation_fee_data['location_id'] = location_id
+
+    medical_services_fee_data = data.get('medical_services_fee', {})
+    medical_services_fee_data['doctor_id'] = doctor_id
+    medical_services_fee_data['location_id'] = location_id
+
+    consultation_fee_serializer = ConsultationFeeSerializer(data=consultation_fee_data)
+    medical_services_fee_serializer = MedicalServicesFeeSerializer(data=medical_services_fee_data)
+
+    if consultation_fee_serializer.is_valid() and medical_services_fee_serializer.is_valid():
+        consultaion=consultation_fee_serializer.save()
+        medicalservice=medical_services_fee_serializer.save()
+        response_data['message_code']= 1000
+        response_data['message_text'] = 'Data successfully saved!'
+        response_data['message_data']={'consultation_fee_id':consultaion.consultation_fee_id,'medical_service_fee_id':medicalservice.medical_service_fee_id}
+    else:
+        errors = {
+            'consultation_fee_errors': consultation_fee_serializer.errors,
+            'medical_services_fee_errors': medical_services_fee_serializer.errors
+        }
+        response_data['message_text'] = 'Failed to save data. Please check the errors.'
+        response_data['errors'] = errors
+
+    return Response(response_data, status=status.HTTP_200_OK)

@@ -3,7 +3,7 @@ from .views import (fi_insert_doctor_medicines,fi_get_all_doctor_medicines,fi_up
 from .views import fi_insert_doctor_location, fi_update_doctor_location, fi_delete_doctor_location, fi_get_all_doctor_location
 from .views import fi_insert_doctor, fi_delete_doctor
 from .views import (insert_doctor_location_availability,update_doctor_location_availability,delete_doctor_location_availability,get_all_doctor_location_availability,)
-
+from .views import *
 
 urlpatterns = [    
                
@@ -22,13 +22,15 @@ urlpatterns = [
     ######################### Doctor  ############################    
     path('insert_doctor/', fi_insert_doctor, name='fi_insert_doctor'),
     path('delete_doctor/<int:doctor_id>/', fi_delete_doctor, name='fi_delete_doctor'),
-    
+    path("get_doctor_by_id/",get_doctor_by_id),
+    path("update_doctor_details/",update_doctor_details),
+
     ############################# Doctor location Availability #################################
     path('insert_doctor_location_availability/', insert_doctor_location_availability, name='insert_doctor_location_availability'),
     path('update_doctor_location_availability/', update_doctor_location_availability, name='update_doctor_location_availability'),
     path('delete_doctor_location_availability/<int:doctor_location_availability_id>/', delete_doctor_location_availability, name='delete_doctor_location_availability'),
     path('get_all_doctor_location_availability/', get_all_doctor_location_availability, name='get_all_doctor_location_availability'),
     
-    
+    path("insert_consultAndMedic_fees/",insert_ConsultMedic_Fees),
 ]
 
