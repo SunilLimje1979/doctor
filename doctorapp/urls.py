@@ -12,6 +12,7 @@ urlpatterns = [
     path('update_doctor_medicine/<int:doctor_medicine_id>/', fi_update_doctor_medicines, name='update_doctor_medicine'),
     path('delete_doctor_medicine/<int:doctor_medicine_id>/', fi_delete_doctor_medicines, name='delete_doctor_medicine'),
     path('get_all_doctor_medicines/', fi_get_all_doctor_medicines, name='get_all_doctor_medicines'),
+    path('get_all_doctor_medicine_bydoctorid_medicinename/', fi_get_all_doctor_medicine_bydoctorid_medicinename, name='get_all_doctor_medicine_bydoctorid_medicinename'),
      
     ######################### Doctor Location ############################
     path('insert_doctor_location/', fi_insert_doctor_location),

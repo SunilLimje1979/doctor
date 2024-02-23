@@ -204,6 +204,53 @@ def fi_get_all_doctor_medicines(request):
 
     return Response(res, status=status.HTTP_200_OK)
 
+
+#########################get all doctor medicine bydoctorid and medicinename##########################
+@api_view(['POST'])
+def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': "Failure", 'message_data': {'Functional part is commented.'}, 'message_debug': debug}
+
+    try:
+        if request.method == 'POST':
+            data = request.data
+
+            doctor_id = data.get('doctor_id', '')
+            medicine_name = data.get('medicine_name', '')
+            if not doctor_id:
+                return Response({'message_code': 999, 'message_text': 'Doctor id is required.'}, status=status.HTTP_200_OK)
+            elif not medicine_name:
+                return Response({'message_code': 999, 'message_text': 'Doctor medicine name is required.'}, status=status.HTTP_200_OK)
+
+            try:
+                # Fetching the existing TbldoctorMedicines instance from the database
+                doctor_medicine = TbldoctorMedicines.objects.get(doctor_id=doctor_id,medicine_name__icontains=medicine_name)
+                serializer = TbldoctorMedicinesSerializer(doctor_medicine)
+
+                return Response({
+                    'message_code': 1000,
+                    'message_text': 'Success',
+                    'message_data': serializer.data,
+                    'message_debug': debug if debug else []
+                }, status=status.HTTP_200_OK)
+            except TbldoctorMedicines.DoesNotExist:
+                return Response({
+                    'message_code': 999,
+                    'message_text': f'Doctor medicine with id {doctor_medicine_id} not found.',
+                    'message_data': { },
+                    'message_debug': debug if debug else []
+                }, status=status.HTTP_200_OK)
+    except Exception as e:
+        res = {
+            'message_code': 999,
+            'message_text': f'Error in fi_get_all_doctor_medicines. Error: {str(e)}',
+            'message_data': {},
+            'message_debug': debug if debug else []
+        }
+
+    return Response(res, status=status.HTTP_200_OK)
+
+
 ######################### Doctor Medicines ############################
 ##################### insert  ##########
 @api_view(['POST'])
