@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from medicify_project.models import * 
 from medicify_project.serializers import *
+from django.db.models import Q
 # from .models import Tbldoctorlocations
 # from .serializers import DoctorLocationSerializer
 # from .models import Tbldoctors  # Import the correct model
@@ -219,13 +220,15 @@ def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
             medicine_name = data.get('medicine_name', '')
             if not doctor_id:
                 return Response({'message_code': 999, 'message_text': 'Doctor id is required.'}, status=status.HTTP_200_OK)
-            elif not medicine_name:
-                return Response({'message_code': 999, 'message_text': 'Doctor medicine name is required.'}, status=status.HTTP_200_OK)
-
             try:
-                # Fetching the existing TbldoctorMedicines instance from the database
-                doctor_medicine = TbldoctorMedicines.objects.get(doctor_id=doctor_id,medicine_name__icontains=medicine_name)
-                serializer = TbldoctorMedicinesSerializer(doctor_medicine)
+                
+                doctor_medicines_queryset = TbldoctorMedicines.objects.filter(doctor_id=doctor_id)
+
+                if medicine_name:
+                    doctor_medicines_queryset = doctor_medicines_queryset.filter(medicine_name__icontains=medicine_name)
+
+                serializer = TbldoctorMedicinesSerializer(doctor_medicines_queryset, many=True)
+
 
                 return Response({
                     'message_code': 1000,
