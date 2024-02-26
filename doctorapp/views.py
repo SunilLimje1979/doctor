@@ -42,17 +42,27 @@ def fi_insert_doctor_medicines(request):
             else:
                 try:
                     # Creating a new instance of TbldoctorMedicines model
-                    doctor_medicine = TbldoctorMedicines(**data)
+                    # doctor_medicine = TbldoctorMedicines(**data)
 
-                    # Saving the new instance to the database
-                    doctor_medicine.save()
+                    # # Saving the new instance to the database
+                    # doctor_medicine.save()
+                    doctorMedicinesSerializer = TbldoctorMedicinesSerializer(data=data)
+                    if doctorMedicinesSerializer.is_valid():
+                        instance = doctorMedicinesSerializer.save()
+                        last_doctor_medicine_id = instance.doctor_medicine_id
 
-                    res = {
-                        'message_code': 1000,
-                        'message_text': 'Success',
-                        'message_data': TbldoctorMedicinesSerializer(doctor_medicine).data,
-                        'message_debug': debug if debug else []
-                    }
+                        res = {
+                            'message_code': 1000,
+                            'message_text': 'Success',
+                            'message_data': last_doctor_medicine_id,
+                            'message_debug': debug if debug else []
+                        }
+                    else:
+                            res = {
+                                'message_code': 2000,
+                                'message_text': 'Validation Error',
+                                'message_errors': doctorMedicinesSerializer.errors
+                            } 
                 except Exception as e:
                     res = {
                         'message_code': 999,
