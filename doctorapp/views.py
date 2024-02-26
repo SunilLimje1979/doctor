@@ -58,11 +58,11 @@ def fi_insert_doctor_medicines(request):
                             'message_debug': debug if debug else []
                         }
                     else:
-                            res = {
-                                'message_code': 2000,
-                                'message_text': 'Validation Error',
-                                'message_errors': doctorMedicinesSerializer.errors
-                            } 
+                        res = {
+                            'message_code': 2000,
+                            'message_text': 'Validation Error',
+                            'message_errors': doctorMedicinesSerializer.errors
+                        } 
                 except Exception as e:
                     res = {
                         'message_code': 999,
