@@ -249,7 +249,7 @@ def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
             except TbldoctorMedicines.DoesNotExist:
                 return Response({
                     'message_code': 999,
-                    'message_text': f'Doctor medicine with id {doctor_medicine_id} not found.',
+                    'message_text': f'Doctor medicine with id  not found.',
                     'message_data': { },
                     'message_debug': debug if debug else []
                 }, status=status.HTTP_200_OK)
