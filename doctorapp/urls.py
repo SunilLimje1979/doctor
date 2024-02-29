@@ -25,6 +25,7 @@ urlpatterns = [
     path('delete_doctor/<int:doctor_id>/', fi_delete_doctor, name='fi_delete_doctor'),
     path("get_doctor_by_id/",get_doctor_by_id),
     path("update_doctor_details/",update_doctor_details),
+    path("get_doctor_profileby_token/",get_doctor_profileby_token),
 
     ############################# Doctor location Availability #################################
     path('insert_doctor_location_availability/', insert_doctor_location_availability, name='insert_doctor_location_availability'),
@@ -33,5 +34,11 @@ urlpatterns = [
     path('get_all_doctor_location_availability/', get_all_doctor_location_availability, name='get_all_doctor_location_availability'),
     
     path("insert_consultAndMedic_fees/",insert_ConsultMedic_Fees),
+
+    #################################Lab Investigations#########################################
+    path('insert_labinvestigations/', fi_insert_labinvestigations, name='fi_insert_labinvestigations'),
+    path('delete_labinvestigations/', fi_delete_labinvestigations, name='fi_delete_labinvestigations'),
+    path("get_labinvestigations_by_id/",fi_get_labinvestigations_by_id, name='fi_get_labinvestigations_by_id'),
+    path("update_labinvestigations/",fi_update_labinvestigations, name='fi_update_labinvestigations'),
 ]
 

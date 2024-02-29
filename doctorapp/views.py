@@ -105,8 +105,7 @@ def fi_update_doctor_medicines(request, doctor_medicine_id):
 
             fields_to_update = ['medicine_code', 'medicine_name', 'medicine_form', 'medicine_frequency',
                                  'medicine_duration', 'medicine_dosages', 'medicine_manufacture', 'medicine_pack_size',
-                                 'medicine_preservation', 'medicine_min_stock', 'medicine_gst', 'medicine_content_name',
-                                 'doctor_id']
+                                 'medicine_preservation', 'medicine_min_stock', 'medicine_gst', 'medicine_content_name']
 
             for field in fields_to_update:
                 if data.get(field) is not None:
@@ -330,17 +329,17 @@ def fi_update_doctor_location(request):
                 res = {
                     'message_code': 1000,
                     'message_text': 'Success',
-                    'message_data': updated_data,
+                    'message_data': doctor_location_id,
                     'message_debug': debug if debug else []
                 }
                 return Response(res, status=status.HTTP_200_OK)
-
-        res = {
-            'message_code': 999,
-            'message_text': serializer.errors,
-            'message_data': {},
-            'message_debug': debug if debug else []
-        }
+            else:
+                res = {
+                    'message_code': 999,
+                    'message_text': serializer.errors,
+                    'message_data': {},
+                    'message_debug': debug if debug else []
+                }
         return Response(res, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         res = {
@@ -806,3 +805,241 @@ def insert_ConsultMedic_Fees(request):
         response_data['errors'] = errors
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(["POST"])
+def get_doctor_profileby_token(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    doctor_login_token = request.data.get('doctor_login_token', None)
+
+    if not doctor_login_token:
+        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
+    else:
+        try:
+            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+            serializer = DoctorSerializer(doctor)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Doctor details are fetched successfully',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except Tbldoctors.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+############################################ Lab Investigations
+
+
+@api_view(['POST'])
+def fi_get_labinvestigations_by_id(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+        
+
+    investigation_id = request.data.get('investigation_id', '')
+
+    if not investigation_id:
+        res = {'message_code': 999, 'message_text': 'investigation id is required.'}
+    else:
+        try:
+            
+            # Fetch data using Django ORM
+            lab_investigation = Tbllabinvestigations.objects.filter(
+                Q(investigation_id=investigation_id,isdeleted=0)
+            )
+
+            # Serialize the data
+            serializer = TbllabinvestigationsSerializer(lab_investigation, many=True)
+            result = serializer.data
+
+            if result:
+                res = {
+                    'message_code': 1000,
+                    'message_text': "Lab investigations retrieved successfully.",
+                    'message_data': result,
+                    'message_debug': [{"Debug": debug}] if debug != "" else []
+                }
+            else:
+                res = {
+                    'message_code': 999,
+                    'message_text': "Lab investigations for this investigation id not found.",
+                    'message_data': [],
+                    'message_debug': [{"Debug": debug}] if debug != "" else []
+                }
+
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f"Error: {str(e)}"}
+
+    return Response(res, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def fi_insert_labinvestigations(request):
+    
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+     
+    # Extract data from request
+    doctor_id = request.data.get('doctor_id', '')
+    investigation_category = request.data.get('investigation_category', '')
+    investigation_name = request.data.get('investigation_name', '')
+
+    # Validate appointment_id
+    if not doctor_id:
+        res = {'message_code': 999,'message_text': 'Doctor id is required'}
+    elif not investigation_category:
+        res = {'message_code': 999,'message_text': 'Investigation category is required'}
+    elif not investigation_name:
+        res = {'message_code': 999,'message_text': 'Investigation name is required'}
+    else:
+        try:
+            
+            investigation_data = {
+                'doctor_id':doctor_id,
+                'investigation_category':investigation_category,
+                'investigation_name':investigation_name
+            }
+
+            labinvestigationSerializer = TbllabinvestigationsSerializer(data=investigation_data)
+            if labinvestigationSerializer.is_valid():
+                instance = labinvestigationSerializer.save()
+                last_investigation_id = instance.investigation_id
+
+                res = {
+                    'message_code': 1000,
+                    'message_text': 'Success',
+                    'message_data': [{'last_investigation_id': last_investigation_id}],
+                    'message_debug': debug if debug else []
+                }
+            else:
+                res = {
+                    'message_code': 2000,
+                    'message_text': 'Validation Error',
+                    'message_errors': labinvestigationSerializer.errors
+                }
+
+
+        except Tbllabinvestigations.DoesNotExist:
+            res = {'message_code': 999, 'message_text': 'Tbllabinvestigations not found'}
+
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f'Error: {str(e)}'}
+
+    return Response(res, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def fi_update_labinvestigations(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+     
+    investigation_id = request.data.get('investigation_id', '')
+    doctor_id = request.data.get('doctor_id', '')
+    investigation_category = request.data.get('investigation_category', '')
+    investigation_name = request.data.get('investigation_name', '')
+
+    # Validate appointment_id
+    if not investigation_id:
+        res = {'message_code': 999,'message_text': 'Investigation id is required'}
+    elif not doctor_id:
+        res = {'message_code': 999,'message_text': 'Doctor id is required'}
+    elif not investigation_category:
+        res = {'message_code': 999,'message_text': 'Investigation category is required'}
+    elif not investigation_name:
+        res = {'message_code': 999,'message_text': 'Investigation name is required'}
+    else:
+
+        try:
+            if investigation_id:
+                try:
+                # Get MedicineInstructions instance
+                    investigation_data = {
+                            'doctor_id':doctor_id,
+                            'investigation_category':investigation_category,
+                            'investigation_name':investigation_name
+                        }
+                    lab_investigation = Tbllabinvestigations.objects.get(investigation_id=investigation_id)
+
+
+                    serializer = TbllabinvestigationsSerializer(lab_investigation, data=investigation_data, partial=True)
+                    if serializer.is_valid():
+                        updated_data = serializer.validated_data  # Get the validated data after a successful update
+                        serializer.save()
+
+                        res = {
+                                'message_code': 1000,
+                                'message_text': 'Success',
+                                'message_data': {'investigation_id': investigation_id},
+                                'message_debug': debug if debug else []
+                            }
+                    else:
+                            res = {
+                                'message_code': 2000,
+                                'message_text': 'Validation Error',
+                                'message_errors': serializer.errors
+                            }
+
+                    
+                except Tbllabinvestigations.DoesNotExist:
+                    res = {'message_code': 999, 'message_text': 'Tbllabinvestigations not found'}
+
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f'Error: {str(e)}',
+                   'message_data': [],
+                   'message_debug': [] if debug == "" else [{'Debug': debug}]}
+    return Response(res, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def fi_delete_labinvestigations(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+    
+    investigation_id = request.data.get('investigation_id', '')
+
+    if not investigation_id:
+        res = {'message_code': 999, 'message_text': 'investigation id is required.'}
+    else:
+        try:
+                    investigation_data = {
+                            'isdeleted':1
+                        }
+                    lab_investigation = Tbllabinvestigations.objects.get(investigation_id=investigation_id)
+
+
+                    serializer = TbllabinvestigationsSerializer(lab_investigation, data=investigation_data, partial=True)
+                    if serializer.is_valid():
+                        updated_data = serializer.validated_data  # Get the validated data after a successful update
+                        serializer.save()
+
+                        res = {
+                                'message_code': 1000,
+                                'message_text': 'Success',
+                                'message_data': {'investigation_id': investigation_id},
+                                'message_debug': debug if debug else []
+                            }
+                    else:
+                            res = {
+                                'message_code': 2000,
+                                'message_text': 'Validation Error',
+                                'message_errors': serializer.errors
+                            }
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f"Error: {str(e)}"}
+
+    return Response(res, status=status.HTTP_200_OK)
+
