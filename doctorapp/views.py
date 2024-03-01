@@ -189,7 +189,7 @@ def fi_get_all_doctor_medicines(request):
             try:
                 # Fetching the existing TbldoctorMedicines instance from the database
                 doctor_medicine = TbldoctorMedicines.objects.get(doctor_medicine_id=doctor_medicine_id)
-                serializer = TbldoctorMedicinesSerializer(doctor_medicine)
+                serializer = TbldoctorMedicinesSerializer(doctor_medicine, many=True)
 
                 return Response({
                     'message_code': 1000,
@@ -396,7 +396,7 @@ def fi_get_all_doctor_location(request):
             
             try:
                 doctor_location = Tbldoctorlocations.objects.get(doctor_location_id=doctor_location_id)
-                serializer = DoctorLocationSerializer(doctor_location)
+                serializer = DoctorLocationSerializer(doctor_location, many=True)
 
                 res = {
                     'message_code': 1000,
@@ -702,7 +702,7 @@ def get_doctor_by_id(request):
     else:
         try:
             doctor = Tbldoctors.objects.get(doctor_id=doctor_id)
-            serializer = DoctorSerializer(doctor)
+            serializer = DoctorSerializer(doctor, many=True)
             result = serializer.data
 
             response_data = {
@@ -826,7 +826,7 @@ def get_doctor_profileby_token(request):
     else:
         try:
             doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
-            serializer = DoctorSerializer(doctor)
+            serializer = DoctorSerializer(doctor, many=True)
             result = serializer.data
 
             response_data = {
