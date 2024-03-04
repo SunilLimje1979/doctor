@@ -231,7 +231,7 @@ def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
                 return Response({'message_code': 999, 'message_text': 'Doctor id is required.'}, status=status.HTTP_200_OK)
             try:
                 
-                doctor_medicines_queryset = TbldoctorMedicines.objects.filter(doctor_id=doctor_id)
+                doctor_medicines_queryset = TbldoctorMedicines.objects.filter(doctor_id=doctor_id,isdeleted=0)
 
                 if medicine_name:
                     doctor_medicines_queryset = doctor_medicines_queryset.filter(medicine_name__icontains=medicine_name)
@@ -361,6 +361,7 @@ def fi_delete_doctor_location(request, doctor_location_id):
         doctor_location = Tbldoctorlocations.objects.get(doctor_location_id=doctor_location_id)
         doctor_location.isdeleted = True
         doctor_location.save()
+        # doctor_location.delete()
 
         res = {
             'message_code': 1000,
