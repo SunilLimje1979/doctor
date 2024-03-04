@@ -188,7 +188,7 @@ def fi_get_all_doctor_medicines(request):
 
             try:
                 # Fetching the existing TbldoctorMedicines instance from the database
-                doctor_medicine = TbldoctorMedicines.objects.get(doctor_medicine_id=doctor_medicine_id)
+                doctor_medicine = TbldoctorMedicines.objects.filter(doctor_medicine_id=doctor_medicine_id)
                 serializer = TbldoctorMedicinesSerializer(doctor_medicine, many=True)
 
                 return Response({
