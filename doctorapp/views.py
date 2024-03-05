@@ -826,7 +826,7 @@ def get_doctor_profileby_token(request):
         response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
     else:
         try:
-            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+            doctor = Tbldoctors.objects.filter(doctor_login_token=doctor_login_token)
             serializer = DoctorSerializer(doctor, many=True)
             result = serializer.data
 
