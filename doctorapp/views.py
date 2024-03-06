@@ -702,7 +702,7 @@ def get_doctor_by_id(request):
         response_data = {'message_code': 999, 'message_text': 'Doctor ID is required.'}
     else:
         try:
-            doctor = Tbldoctors.objects.get(doctor_id=doctor_id)
+            doctor = Tbldoctors.objects.filter(doctor_id=doctor_id)
             serializer = DoctorSerializer(doctor, many=True)
             result = serializer.data
 
