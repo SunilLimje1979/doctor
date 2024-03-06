@@ -829,13 +829,20 @@ def get_doctor_profileby_token(request):
             doctor = Tbldoctors.objects.filter(doctor_login_token=doctor_login_token)
             serializer = DoctorSerializer(doctor, many=True)
             result = serializer.data
-
-            response_data = {
-                'message_code': 1000,
-                'message_text': 'Doctor details are fetched successfully',
-                'message_data': result,
-                'message_debug': debug
-            }
+            if result:
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Doctor details are fetched successfully',
+                    'message_data': result,
+                    'message_debug': debug
+                }
+            else:
+                 response_data = {
+                    'message_code': 999,
+                    'message_text': 'no doctor token match.',
+                    'message_data': [],
+                    'message_debug': debug
+                }
 
         except Tbldoctors.DoesNotExist:
             response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
