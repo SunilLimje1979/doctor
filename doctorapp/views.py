@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from medicify_project.models import * 
 from medicify_project.serializers import *
 from django.db.models import Q
+
+from django.db import connection
 # from .models import Tbldoctorlocations
 # from .serializers import DoctorLocationSerializer
 # from .models import Tbldoctors  # Import the correct model
@@ -386,41 +388,50 @@ def fi_delete_doctor_location(request, doctor_location_id):
 
     return Response(res, status=status.HTTP_404_NOT_FOUND if res['message_code'] == 900 else status.HTTP_200_OK)
 ##################### Get  ##########
+
+
 @api_view(['POST'])
 def fi_get_all_doctor_location(request):
     debug = ""
-    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': {}, 'message_debug': debug}
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+    
 
-    try:
-        if request.method == 'POST':
-            doctor_location_id = request.data.get('doctor_location_id')
+    doctor_location_id = request.data.get('doctor_location_id', '')
+    
+    if not doctor_location_id:
+        res = {'message_code': 999, 'message_text': 'doctor location id is required.'}
+    else:
+        try:
             
-            try:
-                doctor_location = Tbldoctorlocations.objects.get(doctor_location_id=doctor_location_id)
-                serializer = DoctorLocationSerializer(doctor_location, many=True)
+            doctor_location = Tbldoctorlocations.objects.filter(
+                Q(doctor_location_id=doctor_location_id,isdeleted=0)
+            )
 
+            # Serialize the data
+            serializer = DoctorLocationSerializer(doctor_location, many=True)
+            result = serializer.data
+            # last_query = connection.queries[-1]['sql']
+            # print(last_query)
+            if result:
                 res = {
                     'message_code': 1000,
-                    'message_text': 'Success',
-                    'message_data': serializer.data,
+                    'message_text': "Doctor location retrieved successfully.",
+                    'message_data': result,
                     'message_debug': [{"Debug": debug}] if debug != "" else []
                 }
-            except Tbldoctorlocations.DoesNotExist:
+            else:
                 res = {
-                    'message_code': 900,
-                    'message_text': 'Doctor location not found.',
-                    'message_data': {},
+                    'message_code': 999,
+                    'message_text': "Doctor location not found.",
+                    'message_data': [],
                     'message_debug': [{"Debug": debug}] if debug != "" else []
                 }
-    except Exception as e:
-        res = {
-            'message_code': 999,
-            'message_text': 'Doctor location id is Required',
-            'message_data': {},
-            'message_debug': [{"Debug": debug}] if debug != "" else []
-        }
 
-    return Response(res, status=status.HTTP_404_NOT_FOUND if res['message_code'] == 900 else status.HTTP_200_OK)
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f"Error: {str(e)}"}
+
+    return Response(res, status=status.HTTP_200_OK)
+
 
 ############################# Doctor ##################################
 ######################## Insert ############################
