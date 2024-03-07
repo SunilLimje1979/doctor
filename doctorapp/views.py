@@ -791,9 +791,18 @@ def insert_ConsultMedic_Fees(request):
     doctor_id = data.get('doctor_id')
     location_id = data.get('location_id')
 
+    
+    avg_time_per_patient = data.get('avg_time_per_patient')
+    price = data.get('price')
+    title = data.get('title')
+
     consultation_fee_data = data.get('consultation_fee', {})
     consultation_fee_data['doctor_id'] = doctor_id
     consultation_fee_data['location_id'] = location_id
+
+    consultation_fee_data['avg_time_per_patient'] = avg_time_per_patient
+    consultation_fee_data['price'] = price
+    consultation_fee_data['title'] = title
 
     medical_services_fee_data = data.get('medical_services_fee', {})
     medical_services_fee_data['doctor_id'] = doctor_id
