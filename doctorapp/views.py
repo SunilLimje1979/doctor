@@ -442,7 +442,7 @@ def fi_insert_doctor(request):
 
     try:
         data = request.data.copy()  # Create a copy of the data to avoid modifying the original request data
-
+        
         # Convert the date of birth to epoch time
         date_of_birth_str = data.get('doctor_dateofbirth', '')
         if date_of_birth_str:
@@ -830,44 +830,44 @@ def insert_ConsultMedic_Fees(request):
 
 
 
-@api_view(["POST"])
-def get_doctor_profileby_token(request):
-    debug = []
-    response_data = {
-        'message_code': 999,
-        'message_text': 'Functional part is commented.',
-        'message_data': [],
-        'message_debug': debug
-    }
+# @api_view(["POST"])
+# def get_doctor_profileby_token(request):
+#     debug = []
+#     response_data = {
+#         'message_code': 999,
+#         'message_text': 'Functional part is commented.',
+#         'message_data': [],
+#         'message_debug': debug
+#     }
 
-    doctor_login_token = request.data.get('doctor_login_token', None)
+#     doctor_login_token = request.data.get('doctor_login_token', None)
 
-    if not doctor_login_token:
-        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
-    else:
-        try:
-            doctor = Tbldoctors.objects.filter(doctor_login_token=doctor_login_token)
-            serializer = DoctorSerializer(doctor, many=True)
-            result = serializer.data
-            if result:
-                response_data = {
-                    'message_code': 1000,
-                    'message_text': 'Doctor details are fetched successfully',
-                    'message_data': result,
-                    'message_debug': debug
-                }
-            else:
-                 response_data = {
-                    'message_code': 999,
-                    'message_text': 'no doctor token match.',
-                    'message_data': [],
-                    'message_debug': debug
-                }
+#     if not doctor_login_token:
+#         response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
+#     else:
+#         try:
+#             doctor = Tbldoctors.objects.filter(doctor_login_token=doctor_login_token)
+#             serializer = DoctorSerializer(doctor, many=True)
+#             result = serializer.data
+#             if result:
+#                 response_data = {
+#                     'message_code': 1000,
+#                     'message_text': 'Doctor details are fetched successfully',
+#                     'message_data': result,
+#                     'message_debug': debug
+#                 }
+#             else:
+#                  response_data = {
+#                     'message_code': 999,
+#                     'message_text': 'no doctor token match.',
+#                     'message_data': [],
+#                     'message_debug': debug
+#                 }
 
-        except Tbldoctors.DoesNotExist:
-            response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
+#         except Tbldoctors.DoesNotExist:
+#             response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
 
-    return Response(response_data, status=status.HTTP_200_OK)
+#     return Response(response_data, status=status.HTTP_200_OK)
 
 
 ############################################ Lab Investigations
@@ -1070,4 +1070,382 @@ def fi_delete_labinvestigations(request):
             res = {'message_code': 999, 'message_text': f"Error: {str(e)}"}
 
     return Response(res, status=status.HTTP_200_OK)
+
+####################################new apis#############################################
+@api_view(['POST'])
+def get_consultation_fee_details(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    consultation_fee_id = request.data.get('consultation_fee_id', None)
+
+    if not consultation_fee_id:
+        response_data = {'message_code': 999, 'message_text': 'Consultation Fee ID is required.'}
+    else:
+        try:
+            consultation_fee = ConsultationFee.objects.get(consultation_fee_id=consultation_fee_id, is_deleted=0)
+            serializer = ConsultationFeeSerializer(consultation_fee)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Consultation Fee details are fetched successfully',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except ConsultationFee.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Consultation Fee not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def get_medical_service_fee_details(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    medical_service_fee_id = request.data.get('medical_service_fee_id', None)
+
+    if not medical_service_fee_id:
+        response_data = {'message_code': 999, 'message_text': 'Medical Service Fee ID is required.'}
+    else:
+        try:
+            medical_service_fee = MedicalServicesFee.objects.get(medical_service_fee_id=medical_service_fee_id, is_deleted=0)
+            serializer = MedicalServicesFeeSerializer(medical_service_fee)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Medical Service Fee details are fetched successfully',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except MedicalServicesFee.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Medical Service Fee not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def update_consultation_fee_details(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    consultation_fee_id = request.data.get('consultation_fee_id', None)
+
+    if not consultation_fee_id:
+        response_data = {'message_code': 999, 'message_text': 'Consultation Fee ID is required in the request body.'}
+    else:
+        try:
+            consultation_fee = ConsultationFee.objects.get(consultation_fee_id=consultation_fee_id, is_deleted=0)
+            serializer = ConsultationFeeSerializer(consultation_fee, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                updated_instance = serializer.save()
+                updated_data = {}
+
+                for field in serializer.fields:
+                    if field in serializer.validated_data:
+                        updated_data[field] = updated_instance.__getattribute__(field)
+
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Consultation Fee details are updated successfully',
+                    'message_data': updated_data,
+                    'message_debug': debug
+                }
+            else:
+                response_data['message_text'] = 'Invalid data provided.'
+
+        except ConsultationFee.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Consultation Fee not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def update_medical_service_fee_details(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    medical_service_fee_id = request.data.get('medical_service_fee_id', None)
+
+    if not medical_service_fee_id:
+        response_data = {'message_code': 999, 'message_text': 'Medical Service Fee ID is required in the request body.'}
+    else:
+        try:
+            medical_service_fee = MedicalServicesFee.objects.get(medical_service_fee_id=medical_service_fee_id, is_deleted=0)
+            serializer = MedicalServicesFeeSerializer(medical_service_fee, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                updated_instance = serializer.save()
+                updated_data = {}
+
+                for field in serializer.fields:
+                    if field in serializer.validated_data:
+                        updated_data[field] = updated_instance.__getattribute__(field)
+
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Medical Service Fee details are updated successfully',
+                    'message_data': updated_data,
+                    'message_debug': debug
+                }
+            else:
+                response_data['message_text'] = 'Invalid data provided.'
+
+        except MedicalServicesFee.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'Medical Service Fee not found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def get_doctor_location_availability(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': {}, 'message_debug': debug}
+
+    try:
+        if request.method == 'POST':
+            data = request.data
+            doctor_id = data.get('doctor_id', None)
+            availability_day = data.get('availability_day', None)
+
+            if doctor_id is not None and availability_day is not None:
+                queryset = Tbldoctorlocationavailability.objects.filter(doctor_id=doctor_id, availability_day=availability_day, isdeleted=0)
+                serializer = DoctorLocationAvailabilitySerializer(queryset, many=True)
+
+                if not serializer.data:
+                    res['message_text'] = 'Doctor availability not found for the given parameters.'
+                    return Response(res, status=status.HTTP_404_NOT_FOUND)
+
+                res = {
+                    'message_code': 1000,
+                    'message_text': 'Success',
+                    'message_data': serializer.data,
+                    'message_debug': debug if debug else []
+                }
+                return Response(res, status=status.HTTP_200_OK)
+            else:
+                res['message_text'] = 'Doctor ID and availability day are required parameters.'
+                return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        res = {
+            'message_code': 999,
+            'message_text': f'Error in get_doctor_location_availability. Error: {str(e)}',
+            'message_data': {},
+            'message_debug': debug if debug else []
+        }
+
+    return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def insert_doctor_leave(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    doctor_leave_data = request.data
+
+    # Convert date strings to epoch timestamps
+    doctor_leave_data['leave_date'] = convert_to_epoch(doctor_leave_data.get('leave_date'))
+    doctor_leave_data['updated_date'] = convert_to_epoch(datetime.today().strftime('%Y-%m-%d'))
+    # print(doctor_leave_data['updated_date'])
+
+    doctor_leave_serializer = TbldoctorleaveSerializer(data=doctor_leave_data)
+
+    if doctor_leave_serializer.is_valid():
+        doctor_leave_instance = doctor_leave_serializer.save()
+        response_data['message_code'] = 1000
+        response_data['message_text'] = 'Data successfully saved!'
+        response_data['message_data'] = {'doctor_leave_id': doctor_leave_instance.doctor_leave_id}
+    else:
+        errors = {
+            'doctor_leave_errors': doctor_leave_serializer.errors,
+        }
+        response_data['message_text'] = 'Failed to save data. Please check the errors.'
+        response_data['errors'] = errors
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+def convert_to_epoch(date_str):
+    # Convert date string to epoch timestamp
+    try:
+        date_object = datetime.strptime(date_str, '%Y-%m-%d')
+        epoch_timestamp = int(date_object.timestamp())
+        return epoch_timestamp
+    except ValueError:
+        return None
+    
+
+####################Get Doctor Leave details by doctor id#############
+@api_view(["POST"])
+def get_doctor_leave_details(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    try:
+        # Get doctor ID from request data
+        doctor_id = request.data.get('doctor_id')
+
+        # Get doctor leave details by doctor ID
+        doctor_leave_objects = Tbldoctorleave.objects.filter(doctor_id=doctor_id)
+
+        # Serialize the data
+        doctor_leave_serializer = TbldoctorleaveSerializer(doctor_leave_objects, many=True)
+
+        # Convert epoch values to date format
+        for entry in doctor_leave_serializer.data:
+            entry['leave_date'] = datetime.fromtimestamp(entry['leave_date']).strftime("%Y-%m-%d")
+            entry['updated_date'] = datetime.fromtimestamp(entry['updated_date']).strftime("%Y-%m-%d")
+
+        response_data['message_code'] = 1000
+        response_data['message_text'] = 'Doctor leave details retrieved successfully.'
+        response_data['message_data'] = doctor_leave_serializer.data
+
+    except Tbldoctorleave.DoesNotExist:
+        response_data['message_text'] = 'Doctor leave details not found.'
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def update_doctor_leave(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    try:
+        # Extract data from the request body
+        leave_date = request.data.get('leave_date')
+        start_time = request.data.get('start_time')
+        end_time = request.data.get('end_time')
+        order = request.data.get('order')
+
+        # Convert leave date to epoch value
+        leave_date_epoch = int(datetime.strptime(leave_date, "%Y-%m-%d").timestamp())
+
+        # Get doctor leave objects for the given date
+        doctor_leave_objects = Tbldoctorleave.objects.filter(leave_date=leave_date_epoch, order=order)
+
+        if not doctor_leave_objects.exists():
+            response_data['message_text'] = 'No doctor leave details found for the given date.'
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        # Update doctor leave details
+        for doctor_leave in doctor_leave_objects:
+            # You can update any specific fields here
+            doctor_leave.start_time = start_time if start_time is not None else doctor_leave.start_time
+            doctor_leave.end_time = end_time if end_time is not None else doctor_leave.end_time
+            doctor_leave.updated_date = int(timezone.now().timestamp())
+
+            # Save the updated object
+            doctor_leave.save()
+
+        response_data['message_code'] = 1000
+        response_data['message_text'] = 'Doctor leave details updated successfully.'
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        response_data['message_text'] = str(e)
+        return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+def get_doctor_profileby_token(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    doctor_login_token = request.data.get('doctor_login_token', None)
+
+    if not doctor_login_token:
+        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
+    else:
+        try:
+            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+            serializer = DoctorSerializer(doctor)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Doctor details are fetched successfully',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except Tbldoctors.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def get_doctor_related_info(request):
+    doctor_id = request.data.get('doctor_id', None)
+
+    if not doctor_id:
+        return Response({'message': 'Doctor ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Retrieve the last inserted doctor's related information
+        doctor_location = Tbldoctorlocations.objects.filter(doctor_id=doctor_id).values('doctor_location_id').first()
+        doctor_availability = Tbldoctorlocationavailability.objects.filter(doctor_id=doctor_id).values('doctor_location_availability_id').first()
+        medical_service_fee = MedicalServicesFee.objects.filter(doctor_id=doctor_id).values('medical_service_fee_id').first()
+        consultation_fee = ConsultationFee.objects.filter(doctor_id=doctor_id).values('consultation_fee_id').first()
+
+        # Get the last inserted availability ID, consultation fee ID, and medical service fee ID
+        doctor_location_id=doctor_location['doctor_location_id']
+        last_availability_id = doctor_availability['doctor_location_availability_id']+20 if doctor_availability else None
+        last_medical_service_fee_id = medical_service_fee['medical_service_fee_id']+2 if medical_service_fee else None
+        last_consultation_fee_id = consultation_fee['consultation_fee_id']+2 if consultation_fee else None
+
+        response_data = {
+            'doctor_location_id':doctor_location_id,
+            'last_availability_id': last_availability_id,
+            'last_medical_service_fee_id': last_medical_service_fee_id,
+            'last_consultation_fee_id': last_consultation_fee_id,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Tbldoctors.DoesNotExist:
+        return Response({'message': 'Doctor not found.'}, status=status.HTTP_404_NOT_FOUND)
+
 

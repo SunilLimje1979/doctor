@@ -25,7 +25,7 @@ urlpatterns = [
     path('delete_doctor/<int:doctor_id>/', fi_delete_doctor, name='fi_delete_doctor'),
     path("get_doctor_by_id/",get_doctor_by_id),
     path("update_doctor_details/",update_doctor_details),
-    path("get_doctor_profileby_token/",get_doctor_profileby_token),
+    # path("get_doctor_profileby_token/",get_doctor_profileby_token),
 
     ############################# Doctor location Availability #################################
     path('insert_doctor_location_availability/', insert_doctor_location_availability, name='insert_doctor_location_availability'),
@@ -40,5 +40,19 @@ urlpatterns = [
     path('delete_labinvestigations/', fi_delete_labinvestigations, name='fi_delete_labinvestigations'),
     path("get_labinvestigations_by_id/",fi_get_labinvestigations_by_id, name='fi_get_labinvestigations_by_id'),
     path("update_labinvestigations/",fi_update_labinvestigations, name='fi_update_labinvestigations'),
+
+    
+    #########################New Urls####################################
+    path("get_medical_service_fee_details/",get_medical_service_fee_details),
+    path("get_consultation_fee_details/",get_consultation_fee_details),
+    path("update_consultation_fee_details/",update_consultation_fee_details),
+    path("update_medical_service_fee_details/",update_medical_service_fee_details),
+    path("get_doctor_location_availability/",get_doctor_location_availability),#new
+    path("insert_doctor_leave/",insert_doctor_leave),
+    path("get_doctor_leave_details/",get_doctor_leave_details),
+    path("update_doctor_leave/",update_doctor_leave),
+    path("get_doctor_profileby_token/",get_doctor_profileby_token),
+    path("get_doctor_related_info/",get_doctor_related_info)
+
 ]
 
