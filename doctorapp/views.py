@@ -10,6 +10,8 @@ from medicify_project.serializers import *
 from django.db.models import Q
 
 from django.db import connection
+from django.utils import timezone
+
 # from .models import Tbldoctorlocations
 # from .serializers import DoctorLocationSerializer
 # from .models import Tbldoctors  # Import the correct model
