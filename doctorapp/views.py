@@ -109,7 +109,7 @@ def fi_update_doctor_medicines(request, doctor_medicine_id):
 
             fields_to_update = ['medicine_code', 'medicine_name', 'medicine_form', 'medicine_frequency',
                                  'medicine_duration', 'medicine_dosages', 'medicine_manufacture', 'medicine_pack_size',
-                                 'medicine_preservation', 'medicine_min_stock', 'medicine_gst', 'medicine_content_name']
+                                 'medicine_preservation', 'medicine_min_stock', 'medicine_gst', 'medicine_content_name','price']
 
             for field in fields_to_update:
                 if data.get(field) is not None:
