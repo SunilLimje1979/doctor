@@ -11,6 +11,8 @@ from django.db.models import Q
 
 from django.db import connection
 from django.utils import timezone
+import string
+import random
 
 # from .models import Tbldoctorlocations
 # from .serializers import DoctorLocationSerializer
@@ -275,8 +277,11 @@ def fi_insert_doctor_location(request):
     res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
 
     try:
+        random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+        request.data['location_qr_url'] = 'http://13.233.211.102/DoctorCollection/bot/'+str(random_string)
+        request.data['location_token'] = str(random_string)
         serializer = DoctorLocationSerializer(data=request.data)
-        print("Request Data:", request.data)
+        # print("Request Data:", request.data)
 
         if serializer.is_valid():
             doctor_location = serializer.save()
