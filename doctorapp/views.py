@@ -1456,3 +1456,46 @@ def get_doctor_related_info(request):
         return Response({'message': 'Doctor not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+@api_view(['POST'])
+def get_doctor_location_bylocationtoken(request):
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+    
+
+    location_token = request.data.get('location_token', '')
+    
+    if not location_token:
+        res = {'message_code': 999, 'message_text': 'doctor location token is required.'}
+    else:
+        try:
+            
+            doctor_location = Tbldoctorlocations.objects.filter(
+                Q(location_token=location_token,isdeleted=0)
+            )
+
+            # Serialize the data
+            serializer = DoctorLocationSerializer(doctor_location, many=True)
+            result = serializer.data
+            # last_query = connection.queries[-1]['sql']
+            # print(last_query)
+            if result:
+                res = {
+                    'message_code': 1000,
+                    'message_text': "Doctor location retrieved successfully.",
+                    'message_data': result,
+                    'message_debug': [{"Debug": debug}] if debug != "" else []
+                }
+            else:
+                res = {
+                    'message_code': 999,
+                    'message_text': "Doctor location not found.",
+                    'message_data': [],
+                    'message_debug': [{"Debug": debug}] if debug != "" else []
+                }
+
+        except Exception as e:
+            res = {'message_code': 999, 'message_text': f"Error: {str(e)}"}
+
+    return Response(res, status=status.HTTP_200_OK)
+

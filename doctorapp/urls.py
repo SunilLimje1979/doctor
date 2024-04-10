@@ -52,7 +52,9 @@ urlpatterns = [
     path("get_doctor_leave_details/",get_doctor_leave_details),
     path("update_doctor_leave/",update_doctor_leave),
     path("get_doctor_profileby_token/",get_doctor_profileby_token),
-    path("get_doctor_related_info/",get_doctor_related_info)
+    path("get_doctor_related_info/",get_doctor_related_info),
 
+    
+    path('get_doctor_location_bylocationtoken/', get_doctor_location_bylocationtoken),
 ]
 
