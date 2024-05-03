@@ -1600,54 +1600,47 @@ def update_user_details(request):
 
 @api_view(["POST"])
 def get_doctor_profileby_token(request):
-    debug = []
-    response_data = {
-        'message_code': 999,
-        'message_text': 'Functional part is commented.',
-        'message_data': [],
-        'message_debug': debug
-    }
-
     doctor_login_token = request.data.get('doctor_login_token', None)
 
     if not doctor_login_token:
-        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
-    else:
+        return Response({'message_code': 999, 'message_text': 'Doctor login token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Check if the token exists in Tbldoctors
+        doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+        serializer = DoctorSerializer(doctor)  # Serialize doctor instance
+        serialized_data = serializer.data  # Get serialized data as JSON-compatible dictionary
+
+        response_data = {
+            'message_code': 1000,
+            'message_text': 'Doctor',
+            'message_data': serialized_data  # Include serialized doctor data in response
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Tbldoctors.DoesNotExist:
         try:
-            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
-            serializer = DoctorSerializer(doctor)
-            result = serializer.data
+            # If the token is not found in Tbldoctors, check in tblUsers
+            user = tblUsers.objects.get(user_login_token=doctor_login_token)
+            serializer = TblUsersSerializer(user)  # Serialize user instance
+            serialized_data = serializer.data  # Get serialized data as JSON-compatible dictionary
+
+            if user.location_id:
+                doctor_id = user.location_id.doctor_id
+                # print(doctor_id.doctor_id)
+                serialized_data['doctor_id'] = doctor_id.doctor_id
+            else:
+                doctor_id = None
 
             response_data = {
-                'message_code': 1000,
-                'message_text': 'Doctor',
-                'message_data': result,
-                'message_debug': debug
+                'message_code': 1001,
+                'message_text': f'{get_user_role_description(user.user_role)}',
+                'message_data': serialized_data  # Include serialized user data in response
             }
+            return Response(response_data, status=status.HTTP_200_OK)
 
-        except Tbldoctors.DoesNotExist:
-            try:
-                # If doctor login token is not found in Tbldoctors, check in tblUsers
-                user = tblUsers.objects.get(user_login_token=doctor_login_token)
-                role = get_user_role_description(user.user_role)  # Custom function to get role description
-                serializer = TblUsersSerializer(user)
-                user_result = serializer.data
-
-                # Find doctor ID using location_id (assuming location_id is related to doctor)
-                doctor_id = user.location_id.doctor_id
-                user_result['doctor_id'] = doctor_id  # Include doctor_id in user_result
-                
-                response_data = {
-                    'message_code': 1001,
-                    'message_text': f'{role}',
-                    'message_data': user_result,
-                    'message_debug': debug
-                }
-
-            except tblUsers.DoesNotExist:
-                response_data = {'message_code': 999, 'message_text': 'No matching token found.', 'message_debug': debug}
-
-    return Response(response_data, status=status.HTTP_200_OK)
+        except tblUsers.DoesNotExist:
+            return Response({'message_code': 999, 'message_text': 'No matching token found.'}, status=status.HTTP_404_NOT_FOUND)
 
 def get_user_role_description(role_id):
     # Custom function to map role ID to role description
