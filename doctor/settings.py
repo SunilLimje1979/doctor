@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'doctorapp',
     'medicify_project',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'doctor.urls'
@@ -135,3 +137,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Define media root and URL
 MEDIA_ROOT = BASE_DIR / 'staticfiles/media'
 MEDIA_URL = '/staticfiles/media/'
+
+
+# # In your Django settings.py
+
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost',
+# ]
+
+# # Optionally, you can also configure CORS to allow credentials
+# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
