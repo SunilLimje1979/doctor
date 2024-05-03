@@ -56,5 +56,9 @@ urlpatterns = [
 
     
     path('get_doctor_location_bylocationtoken/', get_doctor_location_bylocationtoken),
+
+    path("insert_user/",insert_user),
+    path("get_all_users_by_location/",get_all_users_by_location),
+    path("update_user_details/", update_user_details)
 ]
 

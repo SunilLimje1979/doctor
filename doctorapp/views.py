@@ -14,6 +14,8 @@ from django.utils import timezone
 import string
 import random
 
+import uuid
+
 # from .models import Tbldoctorlocations
 # from .serializers import DoctorLocationSerializer
 # from .models import Tbldoctors  # Import the correct model
@@ -1390,37 +1392,37 @@ def update_doctor_leave(request):
         response_data['message_text'] = str(e)
         return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(["POST"])
-def get_doctor_profileby_token(request):
-    debug = []
-    response_data = {
-        'message_code': 999,
-        'message_text': 'Functional part is commented.',
-        'message_data': [],
-        'message_debug': debug
-    }
+# @api_view(["POST"])
+# def get_doctor_profileby_token(request):
+#     debug = []
+#     response_data = {
+#         'message_code': 999,
+#         'message_text': 'Functional part is commented.',
+#         'message_data': [],
+#         'message_debug': debug
+#     }
 
-    doctor_login_token = request.data.get('doctor_login_token', None)
+#     doctor_login_token = request.data.get('doctor_login_token', None)
 
-    if not doctor_login_token:
-        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
-    else:
-        try:
-            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
-            serializer = DoctorSerializer(doctor)
-            result = serializer.data
+#     if not doctor_login_token:
+#         response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
+#     else:
+#         try:
+#             doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+#             serializer = DoctorSerializer(doctor)
+#             result = serializer.data
 
-            response_data = {
-                'message_code': 1000,
-                'message_text': 'Doctor details are fetched successfully',
-                'message_data': result,
-                'message_debug': debug
-            }
+#             response_data = {
+#                 'message_code': 1000,
+#                 'message_text': 'Doctor details are fetched successfully',
+#                 'message_data': result,
+#                 'message_debug': debug
+#             }
 
-        except Tbldoctors.DoesNotExist:
-            response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
+#         except Tbldoctors.DoesNotExist:
+#             response_data = {'message_code': 999, 'message_text': 'no doctor token match.', 'message_debug': debug}
 
-    return Response(response_data, status=status.HTTP_200_OK)
+#     return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -1499,3 +1501,161 @@ def get_doctor_location_bylocationtoken(request):
 
     return Response(res, status=status.HTTP_200_OK)
 
+@api_view(["POST"])
+def insert_user(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    user_data = request.data
+
+    # Generate a unique 32-character token for user_login_token
+    user_data['user_login_token'] = uuid.uuid4().hex
+
+
+    user_serializer = TblUsersSerializer(data=user_data)
+
+    if user_serializer.is_valid():
+        user_instance = user_serializer.save()
+        response_data['message_code'] = 1000
+        response_data['message_text'] = 'User data successfully saved!'
+        response_data['message_data'] = {'user_id': user_instance.user_id}
+    else:
+        errors = {
+            'user_errors': user_serializer.errors,
+        }
+        response_data['message_text'] = 'Failed to save user data. Please check the errors.'
+        response_data['errors'] = errors
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+def get_all_users_by_location(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    location_id = request.data.get('location_id', None)
+
+    if not location_id:
+        response_data = {'message_code': 999, 'message_text': 'Location ID is required in the request body.'}
+    else:
+        try:
+            users = tblUsers.objects.filter(location_id=location_id)
+            if not users.exists():
+                response_data = {'message_code': 999, 'message_text': 'No users found for the specified location ID.'}
+            else:
+                serializer = TblUsersSerializer(users, many=True)
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Users retrieved successfully.',
+                    'message_data': serializer.data
+                }
+        except Exception as e:
+            response_data = {'message_code': 999, 'message_text': f'Failed to retrieve users: {str(e)}'}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def update_user_details(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    user_id = request.data.get('user_id', None)
+
+    if not user_id:
+        response_data = {'message_code': 999, 'message_text': 'User ID is required in the request body.'}
+    else:
+        try:
+            user_instance = tblUsers.objects.get(user_id=user_id)
+            if not user_instance:
+                response_data = {'message_code': 999, 'message_text': 'User not found for the specified ID.'}
+            else:
+                serializer = TblUsersSerializer(instance=user_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {'message_code': 1000, 'message_text': 'User details updated successfully.'}
+                else:
+                    response_data = {'message_code': 999, 'message_text': 'Failed to update user details.', 'errors': serializer.errors}
+        except tblUsers.DoesNotExist:
+            response_data = {'message_code': 999, 'message_text': 'User not found for the specified ID.'}
+        except Exception as e:
+            response_data = {'message_code': 999, 'message_text': f'Failed to update user details: {str(e)}'}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def get_doctor_profileby_token(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+
+    doctor_login_token = request.data.get('doctor_login_token', None)
+
+    if not doctor_login_token:
+        response_data = {'message_code': 999, 'message_text': 'Doctor login token is required.'}
+    else:
+        try:
+            doctor = Tbldoctors.objects.get(doctor_login_token=doctor_login_token)
+            serializer = DoctorSerializer(doctor)
+            result = serializer.data
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Doctor',
+                'message_data': result,
+                'message_debug': debug
+            }
+
+        except Tbldoctors.DoesNotExist:
+            try:
+                # If doctor login token is not found in Tbldoctors, check in tblUsers
+                user = tblUsers.objects.get(user_login_token=doctor_login_token)
+                role = get_user_role_description(user.user_role)  # Custom function to get role description
+                serializer = TblUsersSerializer(user)
+                user_result = serializer.data
+
+                # Find doctor ID using location_id (assuming location_id is related to doctor)
+                doctor_id = user.location_id.doctor_id
+                user_result['doctor_id'] = doctor_id  # Include doctor_id in user_result
+                
+                response_data = {
+                    'message_code': 1001,
+                    'message_text': f'{role}',
+                    'message_data': user_result,
+                    'message_debug': debug
+                }
+
+            except tblUsers.DoesNotExist:
+                response_data = {'message_code': 999, 'message_text': 'No matching token found.', 'message_debug': debug}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+def get_user_role_description(role_id):
+    # Custom function to map role ID to role description
+    if role_id == 1:
+        return 'Reception'
+    elif role_id == 2:
+        return 'Compounder'
+    elif role_id == 3:
+        return 'Accountant'
+    else:
+        return 'Unknown'
