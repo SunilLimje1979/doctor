@@ -59,6 +59,9 @@ urlpatterns = [
 
     path("insert_user/",insert_user),
     path("get_all_users_by_location/",get_all_users_by_location),
-    path("update_user_details/", update_user_details)
+    path("update_user_details/", update_user_details),
+    path("update_location_details/",update_location_details),
+    path("update_location_image/",update_location_image),
+ 
 ]
 
