@@ -1716,3 +1716,151 @@ def get_user_role_description(role_id):
         return 'Unknown'
 
 
+@api_view(['POST'])
+def insert_prescription_settings(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    serializer = PrescriptionSettingsSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        try:
+            serializer.save()
+            response_data.update({
+                'message_code': 1000,
+                'message_text': 'Prescription settings inserted successfully.',
+                'message_data': serializer.data
+            })
+        except Exception as e:
+            response_data.update({
+                'message_text': f'Failed to insert prescription settings: {str(e)}'
+            })
+    else:
+        response_data.update({
+            'message_text': 'Invalid data provided.'
+        })
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def get_prescription_settings_by_doctor(request):
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': []
+    }
+
+    doctor_id = request.data.get('doctor_id', None)
+    if not doctor_id:
+        response_data = {'message_code': 999, 'message_text': 'Doctor ID is required in the request body.'}
+    else:
+        try:
+            prescription_settings = PrescriptionSettings.objects.filter(doctor_id=doctor_id).first()
+            if not prescription_settings:
+                response_data = {'message_code': 999, 'message_text': 'Prescription settings not found for the specified doctor.'}
+            else:
+                serializer = PrescriptionSettingsSerializer(prescription_settings)
+                response_data = {
+                    'message_code': 1000,
+                    'message_text': 'Prescription settings retrieved successfully.',
+                    'message_data': serializer.data
+                }
+        except Exception as e:
+            response_data = {'message_code': 999, 'message_text': f'Failed to retrieve prescription settings: {str(e)}'}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def update_header_image(request):
+    try:
+        # Get the doctor ID from the request data
+        doctor_id = request.data.get('doctor_id')
+        if not doctor_id:
+            return Response({'message_code': 999, 'message_text': 'Doctor ID is missing.', 'message_data': {}}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the PrescriptionSettings object associated with the given doctor_id
+        prescription_settings = PrescriptionSettings.objects.filter(doctor_id=doctor_id).first()
+        if not prescription_settings:
+            return Response({'message_code': 999, 'message_text': 'Prescription settings not found for the given doctor ID.', 'message_data': {}}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the new header image file from the request
+        new_image_file = request.FILES.get('header_image')
+        if new_image_file:
+            # Determine the filename for the new image
+            if prescription_settings.header_image:
+                existing_image_filename = os.path.basename(prescription_settings.header_image.name)
+                new_image_filename = existing_image_filename
+            else:
+                new_image_filename = new_image_file.name
+
+            # Delete the old image file if it exists
+            if prescription_settings.header_image:
+                old_image_path = prescription_settings.header_image.path
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+
+            # Update the header_image field with the new image file
+            prescription_settings.header_image.save(new_image_filename, new_image_file)
+            prescription_settings.save()
+
+        response_data = {
+            'message_code': 1000,
+            'message_text': 'Header image updated successfully.',
+            'message_data': {}
+        }
+
+    except Exception as e:
+        response_data = {
+            'message_code': 999,
+            'message_text': f'Error updating header image. Error: {str(e)}',
+            'message_data': {}
+        }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def update_prescription_details(request):
+    try:
+        # Get the doctor ID from the request data
+        doctor_id = request.data.get('doctor_id')
+        if not doctor_id:
+            return Response({'message_code': 999, 'message_text': 'Doctor ID is missing.', 'message_data': {}}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the PrescriptionSettings object associated with the given doctor_id
+        prescription_settings = PrescriptionSettings.objects.filter(doctor_id=doctor_id).first()
+        if not prescription_settings:
+            return Response({'message_code': 999, 'message_text': 'Prescription settings not found for the given doctor ID.', 'message_data': {}}, status=status.HTTP_404_NOT_FOUND)
+
+        # Use the serializer to update the fields in the PrescriptionSettings object
+        serializer = PrescriptionSettingsSerializer(prescription_settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': 'Prescription details updated successfully.',
+                'message_data': serializer.data
+            }
+        else:
+            response_data = {
+                'message_code': 999,
+                'message_text': 'Invalid data provided.',
+                'message_data': serializer.errors
+            }
+
+    except Exception as e:
+        response_data = {
+            'message_code': 999,
+            'message_text': f'Error updating prescription details. Error: {str(e)}',
+            'message_data': {}
+        }
+
+    return Response(response_data, status=status.HTTP_200_OK)

@@ -62,6 +62,11 @@ urlpatterns = [
     path("update_user_details/", update_user_details),
     path("update_location_details/",update_location_details),
     path("update_location_image/",update_location_image),
+    path("insert_prescription_settings/",insert_prescription_settings),
+    path("get_prescription_settings_by_doctor/",get_prescription_settings_by_doctor),
+    path("update_header_image/",update_header_image),
+    path("update_prescription_details/",update_prescription_details),
+    
  
 ]
 
