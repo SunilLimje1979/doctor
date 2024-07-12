@@ -518,7 +518,9 @@ def fi_insert_doctor(request):
             date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d')
             epoch_time = int(date_of_birth.timestamp())
             data['doctor_dateofbirth'] = epoch_time
-
+        
+        current_datetime = datetime.now()
+        data['createdon']=int(current_datetime.timestamp())
         serializer = DoctorSerializer(data=data)
 
         if serializer.is_valid():
@@ -1864,3 +1866,74 @@ def update_prescription_details(request):
         }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+##################For Admin Panel
+@api_view(['POST'])
+def fetch_doctors(request):
+    try:
+        # Filter doctors where isdeleted is 0
+        doctors = Tbldoctors.objects.filter(isdeleted=0)
+        
+        # Serialize the data
+        serializer = DoctorSerializer(doctors, many=True)
+        doctors_data = serializer.data
+        
+        # Convert created_on epoch value to human-readable date format
+        for doctor in doctors_data:
+            if 'createdon' in doctor and doctor['createdon'] is not None:
+                doctor['created_on_formatted'] = datetime.fromtimestamp(doctor['createdon']).strftime('%d-%m-%Y')
+            else:
+                doctor['created_on_formatted'] = None
+        
+        # Prepare the response data
+        response_data = {
+            'message_code': 1000,
+            'message_text': 'Doctors fetched successfully.',
+            'message_data': doctors_data
+        }
+    except Exception as e:
+        response_data = {
+            'message_code': 999,
+            'message_text': f'Error fetching doctors. Error: {str(e)}',
+            'message_data': {}
+        }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+ 
+from django.shortcuts import get_object_or_404
+@api_view(['POST'])
+def doctors_stats(request):
+    try:
+        # Get the doctor ID from the request data
+        doctor_id = request.data.get('doctor_id')
+        if not doctor_id:
+            return Response({'message_code': 999, 'message_text': 'Doctor ID is missing.', 'message_data': {}}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Count consultations for the doctor
+        consultations_count = Tblconsultations.objects.filter(doctor_id=doctor_id).count()
+
+        # 2. Count patient-doctor links for the doctor
+        patient_doctor_links_count = tblPatientDoctorLink.objects.filter(doctor_id=doctor_id).count()
+
+        # 3. Count users associated with the location (indirectly with the doctor)
+        location_id = get_object_or_404(Tbldoctorlocations, doctor_id=doctor_id).doctor_location_id
+        # users_count = tblUsers.objects.filter(location_id=location_id).count()
+
+
+        # Prepare response data
+        response_data = {
+            'consultations': consultations_count if consultations_count else 0,
+            'patient_linked': patient_doctor_links_count if patient_doctor_links_count else 0,
+            'location_id': location_id if location_id else 0,
+        }
+
+        return Response({'message_code': 1000, 'message_text': 'Doctor counters retrieved successfully.', 'message_data': response_data}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'message_code': 999, 'message_text': f'Error retrieving doctor counters. Error: {str(e)}', 'message_data': {}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+

@@ -66,6 +66,8 @@ urlpatterns = [
     path("get_prescription_settings_by_doctor/",get_prescription_settings_by_doctor),
     path("update_header_image/",update_header_image),
     path("update_prescription_details/",update_prescription_details),
+    path('fetch_doctors/',fetch_doctors,name='fetch_doctors'),
+    path('doctors_stats/',doctors_stats,name='doctors_stats'),
     
  
 ]
