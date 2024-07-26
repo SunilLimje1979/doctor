@@ -1716,6 +1716,50 @@ def get_user_role_description(role_id):
         return 'Accountant'
     else:
         return 'Unknown'
+    
+@api_view(["POST"])
+def login_desktop(request):
+    mobile_number = request.data.get('mobile_number', None)
+    password = request.data.get('password', None)
+
+    if not mobile_number or not password:
+        return Response({'message_code': 999, 'message_text': 'Mobile number and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Check if the mobile number and password exist in Tbldoctors
+        doctor = Tbldoctors.objects.get(doctor_mobileno=mobile_number, password=password)
+        serializer = DoctorSerializer(doctor)  # Serialize doctor instance
+        serialized_data = serializer.data  # Get serialized data as JSON-compatible dictionary
+
+        response_data = {
+            'message_code': 1000,
+            'message_text': 'Doctor',
+            'message_data': serialized_data  # Include serialized doctor data in response
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Tbldoctors.DoesNotExist:
+        try:
+            # If not found in Tbldoctors, check in tblUsers
+            user = tblUsers.objects.get(user_mobileno=password)
+            serializer = TblUsersSerializer(user)  # Serialize user instance
+            serialized_data = serializer.data  # Get serialized data as JSON-compatible dictionary
+
+            if user.location_id:
+                doctor_id = user.location_id.doctor_id
+                serialized_data['doctor_id'] = doctor_id.doctor_id
+            else:
+                doctor_id = None
+
+            response_data = {
+                'message_code': 1000,
+                'message_text': f'{get_user_role_description(user.user_role)}',
+                'message_data': serialized_data  # Include serialized user data in response
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except tblUsers.DoesNotExist:
+            return Response({'message_code': 999, 'message_text': 'No matching mobile number and password found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
@@ -1869,11 +1913,42 @@ def update_prescription_details(request):
 
 
 ##################For Admin Panel
+# @api_view(['POST'])
+# def fetch_doctors(request):
+#     try:
+#         # Filter doctors where isdeleted is 0
+#         doctors = Tbldoctors.objects.filter(isdeleted=0)
+        
+#         # Serialize the data
+#         serializer = DoctorSerializer(doctors, many=True)
+#         doctors_data = serializer.data
+        
+#         # Convert created_on epoch value to human-readable date format
+#         for doctor in doctors_data:
+#             if 'createdon' in doctor and doctor['createdon'] is not None:
+#                 doctor['created_on_formatted'] = datetime.fromtimestamp(doctor['createdon']).strftime('%d-%m-%Y')
+#             else:
+#                 doctor['created_on_formatted'] = None
+        
+#         # Prepare the response data
+#         response_data = {
+#             'message_code': 1000,
+#             'message_text': 'Doctors fetched successfully.',
+#             'message_data': doctors_data
+#         }
+#     except Exception as e:
+#         response_data = {
+#             'message_code': 999,
+#             'message_text': f'Error fetching doctors. Error: {str(e)}',
+#             'message_data': {}
+#         }
+
+#     return Response(response_data, status=status.HTTP_200_OK)
 @api_view(['POST'])
 def fetch_doctors(request):
     try:
-        # Filter doctors where isdeleted is 0
-        doctors = Tbldoctors.objects.filter(isdeleted=0)
+        # Filter doctors where isdeleted is 0 and sort by doctor_id in descending order
+        doctors = Tbldoctors.objects.filter(isdeleted=0).order_by('-doctor_id')
         
         # Serialize the data
         serializer = DoctorSerializer(doctors, many=True)
@@ -1932,7 +2007,70 @@ def doctors_stats(request):
 
     except Exception as e:
         return Response({'message_code': 999, 'message_text': f'Error retrieving doctor counters. Error: {str(e)}', 'message_data': {}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+from datetime import timedelta
+@api_view(['POST'])
+def fillter_doctors(request):
+    try:
+        city_id = request.data.get('city_id', None)
+        start_date = request.data.get('start_date', None)
+        end_date = request.data.get('end_date', None)
 
+        # Convert dates from string to datetime objects
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+        # Filter doctors where isdeleted is 0
+        doctors = Tbldoctors.objects.filter(isdeleted=0)
+
+        if city_id:
+            doctors = doctors.filter(doctor_cityid=city_id)
+        
+        if start_date and end_date:
+            start_timestamp = int(start_date.timestamp())
+            end_timestamp = int((end_date + timedelta(days=1)).timestamp()) - 1
+            doctors = doctors.filter(createdon__gte=start_timestamp, createdon__lte=end_timestamp)
+        elif start_date:
+            start_timestamp = int(start_date.timestamp())
+            end_timestamp = int((start_date + timedelta(days=1)).timestamp()) - 1
+            doctors = doctors.filter(createdon__gte=start_timestamp, createdon__lte=end_timestamp)
+
+        # Check if doctors are found
+        if not doctors.exists():
+            response_data = {
+                'message_code': 1001,
+                'message_text': 'No doctors found for the given filters.',
+                'message_data': []
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        # Serialize the data
+        serializer = DoctorSerializer(doctors, many=True)
+        doctors_data = serializer.data
+
+        # Convert created_on epoch value to human-readable date format
+        for doctor in doctors_data:
+            if 'createdon' in doctor and doctor['createdon'] is not None:
+                doctor['created_on_formatted'] = datetime.fromtimestamp(doctor['createdon']).strftime('%d-%m-%Y')
+            else:
+                doctor['created_on_formatted'] = None
+
+        # Prepare the response data
+        response_data = {
+            'message_code': 1000,
+            'message_text': 'Doctors fetched successfully.',
+            'message_data': doctors_data
+        }
+    except Exception as e:
+        response_data = {
+            'message_code': 999,
+            'message_text': f'Error fetching doctors. Error: {str(e)}',
+            'message_data': {}
+        }
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 
