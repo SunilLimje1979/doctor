@@ -225,6 +225,51 @@ def fi_get_all_doctor_medicines(request):
 
 
 #########################get all doctor medicine bydoctorid and medicinename##########################
+# @api_view(['POST'])
+# def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
+#     debug = ""
+#     res = {'message_code': 999, 'message_text': "Failure", 'message_data': {'Functional part is commented.'}, 'message_debug': debug}
+
+#     try:
+#         if request.method == 'POST':
+#             data = request.data
+
+#             doctor_id = data.get('doctor_id', '')
+#             medicine_name = data.get('medicine_name', '')
+#             if not doctor_id:
+#                 return Response({'message_code': 999, 'message_text': 'Doctor id is required.'}, status=status.HTTP_200_OK)
+#             try:
+                
+#                 doctor_medicines_queryset = TbldoctorMedicines.objects.filter(doctor_id=doctor_id,isdeleted=0)
+
+#                 if medicine_name:
+#                     doctor_medicines_queryset = doctor_medicines_queryset.filter(medicine_name__icontains=medicine_name)
+
+#                 serializer = TbldoctorMedicinesSerializer(doctor_medicines_queryset, many=True)
+
+
+#                 return Response({
+#                     'message_code': 1000,
+#                     'message_text': 'Success',
+#                     'message_data': serializer.data,
+#                     'message_debug': debug if debug else []
+#                 }, status=status.HTTP_200_OK)
+#             except TbldoctorMedicines.DoesNotExist:
+#                 return Response({
+#                     'message_code': 999,
+#                     'message_text': f'Doctor medicine with id  not found.',
+#                     'message_data': { },
+#                     'message_debug': debug if debug else []
+#                 }, status=status.HTTP_200_OK)
+#     except Exception as e:
+#         res = {
+#             'message_code': 999,
+#             'message_text': f'Error in fi_get_all_doctor_medicines. Error: {str(e)}',
+#             'message_data': {},
+#             'message_debug': debug if debug else []
+#         }
+
+#     return Response(res, status=status.HTTP_200_OK)
 @api_view(['POST'])
 def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
     debug = ""
@@ -239,14 +284,16 @@ def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
             if not doctor_id:
                 return Response({'message_code': 999, 'message_text': 'Doctor id is required.'}, status=status.HTTP_200_OK)
             try:
-                
-                doctor_medicines_queryset = TbldoctorMedicines.objects.filter(doctor_id=doctor_id,isdeleted=0)
+                # Modify the query to include records with doctor_id as NULL
+                doctor_medicines_queryset = TbldoctorMedicines.objects.filter(
+                    Q(doctor_id=doctor_id) | Q(doctor_id__isnull=True),
+                    isdeleted=0
+                )
 
                 if medicine_name:
                     doctor_medicines_queryset = doctor_medicines_queryset.filter(medicine_name__icontains=medicine_name)
 
                 serializer = TbldoctorMedicinesSerializer(doctor_medicines_queryset, many=True)
-
 
                 return Response({
                     'message_code': 1000,
@@ -257,8 +304,8 @@ def fi_get_all_doctor_medicine_bydoctorid_medicinename(request):
             except TbldoctorMedicines.DoesNotExist:
                 return Response({
                     'message_code': 999,
-                    'message_text': f'Doctor medicine with id  not found.',
-                    'message_data': { },
+                    'message_text': 'Doctor medicine with id not found.',
+                    'message_data': {},
                     'message_debug': debug if debug else []
                 }, status=status.HTTP_200_OK)
     except Exception as e:
